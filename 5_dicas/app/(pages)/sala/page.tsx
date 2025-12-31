@@ -3,20 +3,31 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+import { useAuth } from "@/context/AuthContext";
 import { useGame } from "@/context/GameContext";
 import api from "@/services/axios";
 
 export default function Sala() {
   const router = useRouter();
-  const { sala, jogador, setSala } = useGame();
 
+  // 🔑 Usuário autenticado
+  const { user } = useAuth();
+
+  // 🎮 Estado do jogo
+  const { sala, setSala } = useGame();
+
+  /* ======================
+     GUARD
+  ====================== */
   useEffect(() => {
-    if (!sala || !jogador) {
+    if (!user || !sala) {
       router.push("/home");
     }
-  }, [sala, jogador, router]);
+  }, [user, sala, router]);
 
-  // 🔁 Polling simples (a cada 3s)
+  /* ======================
+     POLLING (aguarda outro jogador)
+  ====================== */
   useEffect(() => {
     if (!sala) return;
 
@@ -28,21 +39,24 @@ export default function Sala() {
         if (res.data.status === "em_jogo") {
           router.push("/jogo");
         }
-      } catch {}
+      } catch {
+        // silencioso (sala pode ter sido removida)
+      }
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [sala, router, setSala]);
+  }, [sala?.codigo, router, setSala]);
 
   if (!sala) return null;
 
-  function copiarCodigo() {
-    navigator.clipboard.writeText(sala!.codigo);
-    alert("Código copiado!");
-  }
+    function copiarCodigo() {
+        if (!sala) return;
+
+        navigator.clipboard.writeText(sala.codigo);
+        alert("Código copiado!");
+    }
 
   function cancelarSala() {
-    // opcional: chamar backend para remover sala
     setSala(null);
     router.push("/home");
   }

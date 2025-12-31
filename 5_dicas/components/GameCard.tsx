@@ -20,11 +20,13 @@ type Props = {
   fase: Fase;
   minhaVez: boolean;
   mensagemFim: string | null;
+  fimDoJogo: boolean;
 
   onRevelarDica: (numero: number) => void;
   onPalpitar: (texto: string) => void;
   onPular: () => void;
   onAvancarRodada: () => void;
+  onVoltarMenu: () => void;
 };
 
 /* =======================
@@ -37,10 +39,12 @@ export default function GameCard({
   fase,
   minhaVez,
   mensagemFim,
+  fimDoJogo,
   onRevelarDica,
   onPalpitar,
   onPular,
   onAvancarRodada,
+  onVoltarMenu
 }: Props) {
   // ✅ ESTADO LOCAL DO INPUT
   const [palpiteTexto, setPalpiteTexto] = useState("");
@@ -67,19 +71,29 @@ export default function GameCard({
       {/* Fim da rodada */}
       {fase === "fim_rodada" && mensagemFim ? (
         <div className="flex-1 flex flex-col items-center justify-center gap-6 text-center">
-          <p className="text-2xl font-bold text-slate-900">
+            <p className="text-2xl font-bold text-slate-900">
             {mensagemFim}
-          </p>
+            </p>
 
-          <button
-            onClick={onAvancarRodada}
-            className="px-8 py-3 rounded-2xl bg-blue-600 text-white
-                       hover:bg-blue-500 transition font-semibold"
-          >
-            Próxima rodada
-          </button>
+            {fimDoJogo ? (
+            <button
+                onClick={onVoltarMenu}
+                className="px-8 py-3 rounded-2xl bg-emerald-600 text-white
+                        hover:bg-emerald-500 transition font-semibold"
+            >
+                Voltar ao menu
+            </button>
+            ) : (
+            <button
+                onClick={onAvancarRodada}
+                className="px-8 py-3 rounded-2xl bg-blue-600 text-white
+                        hover:bg-blue-500 transition font-semibold"
+            >
+                Próxima rodada
+            </button>
+            )}
         </div>
-      ) : (
+        ) : (
         <>
           {/* Dicas */}
           <div className="flex flex-col gap-3">

@@ -1,11 +1,28 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { useGame } from "@/context/GameContext";
-import { socket } from "@/services/socket";
+import { useRouter } from "next/navigation";
 
-import PlayerPanel from "../../../components/PlayerPanel";
-import GameCard from "../../../components/GameCard";
+import { socket } from "@/services/socket";
+import { useGame } from "@/context/GameContext";
+import { useAuth } from "@/context/AuthContext";
+
+import PlayerPanel from "@/components/PlayerPanel";
+import GameCard from "@/components/GameCard";
+
+/* ======================
+   TYPES
+====================== */
+
+type Palpite = {
+  jogadorId: number;
+  texto: string;
+};
+
+type Dica = {
+  numero: number;
+  texto: string;
+};
 
 type DicaUI = {
   numero: number;
@@ -13,17 +30,47 @@ type DicaUI = {
   revelada: boolean;
 };
 
+type GameState = {
+  fase: "escolha_dica" | "palpite" | "fim_rodada";
+  turnoJogadorId: number;
+  dicasReveladas: number[];
+  palpites: Palpite[];
+  mensagemFim: string | null;
+  pontos: Record<number, number>;
+};
+
+/* ======================
+   COMPONENT
+====================== */
+
 export default function Jogo() {
-  const { sala, jogador, setSala } = useGame();
+  const router = useRouter();
 
-  // WebSocket: join + recebe estado autoritativo
+  const { sala, setSala } = useGame();
+  const { user, refreshUser } = useAuth();
+
+  /* ======================
+     GUARDS
+  ====================== */
+
+  if (!user || !sala) return null;
+
+  const usuario = user;
+  const salaAtual = sala;
+  const state: GameState = salaAtual.gameState;
+
+  /* ======================
+     SOCKET
+  ====================== */
+
   useEffect(() => {
-    if (!sala?.codigo || !jogador?.id) return;
+    socket.emit("sala:join", {
+      codigo: salaAtual.codigo,
+      jogadorId: usuario.id,
+    });
 
-    socket.emit("sala:join", { codigo: sala.codigo, jogadorId: jogador.id });
-
-    const handler = (novaSala: typeof sala) => {
-      setSala(novaSala as any);
+    const handler = (novaSala: typeof salaAtual) => {
+      setSala(novaSala);
     };
 
     socket.on("sala:state", handler);
@@ -31,12 +78,13 @@ export default function Jogo() {
     return () => {
       socket.off("sala:state", handler);
     };
-  }, [sala?.codigo, jogador?.id, setSala]);
+  }, [salaAtual.codigo, usuario.id, setSala]);
 
-  // Guards
-  if (!sala || !jogador) return null;
+  /* ======================
+     ESTADOS DERIVADOS
+  ====================== */
 
-  if (sala.jogadores.length < 2) {
+  if (salaAtual.jogadores.length < 2) {
     return (
       <main className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
         <p>Aguardando adversário...</p>
@@ -44,10 +92,9 @@ export default function Jogo() {
     );
   }
 
-  const cartaAtual = sala.cartas[sala.rodadaAtual - 1];
-  const state = sala.gameState;
+  const cartaAtual = salaAtual.cartas[salaAtual.rodadaAtual - 1];
 
-  if (!cartaAtual || !state) {
+  if (!cartaAtual) {
     return (
       <main className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
         <p>Carregando carta...</p>
@@ -55,79 +102,108 @@ export default function Jogo() {
     );
   }
 
-  // Derivados do state (100% servidor)
-  const minhaVez = state.turnoJogadorId === jogador.id;
+  const minhaVez = state.turnoJogadorId === usuario.id;
+
+  const fimDoJogo =
+    state.fase === "fim_rodada" &&
+    salaAtual.rodadaAtual >= salaAtual.totalRodadas;
+
+  /* ======================
+     DICAS UI
+  ====================== */
 
   const dicasUI: DicaUI[] = useMemo(() => {
     return cartaAtual.dicas
       .slice()
-      .sort((a, b) => a.numero - b.numero)
-      .map((d) => {
-        const revelada = state.dicasReveladas.includes(d.numero);
-        return {
-          numero: d.numero,
-          revelada,
-          texto: revelada ? d.texto : null,
-        };
-      });
+      .sort((a: Dica, b: Dica) => a.numero - b.numero)
+      .map((d: Dica) => ({
+        numero: d.numero,
+        revelada: state.dicasReveladas.includes(d.numero),
+        texto: state.dicasReveladas.includes(d.numero) ? d.texto : null,
+      }));
   }, [cartaAtual.dicas, state.dicasReveladas]);
 
-  // Actions (socket)
+  /* ======================
+     ACTIONS
+  ====================== */
+
   function revelarDica(numero: number) {
     socket.emit("jogo:revelarDica", {
-      codigo: sala!.codigo,
-      jogadorId: jogador!.id,
+      codigo: salaAtual.codigo,
+      jogadorId: usuario.id,
       numero,
     });
   }
 
   function palpitar(texto: string) {
     socket.emit("jogo:palpitar", {
-      codigo: sala!.codigo,
-      jogadorId: jogador!.id,
+      codigo: salaAtual.codigo,
+      jogadorId: usuario.id,
       texto,
     });
   }
 
   function pular() {
     socket.emit("jogo:pular", {
-      codigo: sala!.codigo,
-      jogadorId: jogador!.id,
+      codigo: salaAtual.codigo,
+      jogadorId: usuario.id,
     });
   }
 
   function avancarRodada() {
-    socket.emit("jogo:proximaRodada", { codigo: sala!.codigo });
+    socket.emit("jogo:proximaRodada", {
+      codigo: salaAtual.codigo,
+    });
   }
 
-  // Render
+  async function voltarMenu() {
+    await refreshUser(); // 🔄 atualiza vitórias/derrotas
+    setSala(null);
+    router.push("/home");
+  }
+
+  /* ======================
+     RENDER
+  ====================== */
+
   return (
     <main className="min-h-screen bg-slate-950 flex items-center justify-center">
       <div className="w-full max-w-7xl px-6 py-10 grid grid-cols-1 md:grid-cols-[1fr_1.35fr_1fr] gap-6">
+        {/* Jogador 1 */}
         <PlayerPanel
-          username={sala.jogadores[0].username}
-          pontos={state.pontos[sala.jogadores[0].id] ?? 0}
-          palpites={state.palpites.filter((p) => p.jogadorId === sala.jogadores[0].id)}
-          estaNaVez={state.turnoJogadorId === sala.jogadores[0].id}
+          username={salaAtual.jogadores[0].username}
+          pontos={state.pontos[salaAtual.jogadores[0].id] ?? 0}
+          palpites={state.palpites.filter(
+            (p: Palpite) => p.jogadorId === salaAtual.jogadores[0].id
+          )}
+          estaNaVez={state.turnoJogadorId === salaAtual.jogadores[0].id}
+          fase={state.fase}
         />
 
+        {/* Carta */}
         <GameCard
           tipo={cartaAtual.tipo}
           dicas={dicasUI}
           fase={state.fase}
           minhaVez={minhaVez}
           mensagemFim={state.mensagemFim}
+          fimDoJogo={fimDoJogo}
           onRevelarDica={revelarDica}
           onPalpitar={palpitar}
           onPular={pular}
           onAvancarRodada={avancarRodada}
+          onVoltarMenu={voltarMenu}
         />
 
+        {/* Jogador 2 */}
         <PlayerPanel
-          username={sala.jogadores[1].username}
-          pontos={state.pontos[sala.jogadores[1].id] ?? 0}
-          palpites={state.palpites.filter((p) => p.jogadorId === sala.jogadores[1].id)}
-          estaNaVez={state.turnoJogadorId === sala.jogadores[1].id}
+          username={salaAtual.jogadores[1].username}
+          pontos={state.pontos[salaAtual.jogadores[1].id] ?? 0}
+          palpites={state.palpites.filter(
+            (p: Palpite) => p.jogadorId === salaAtual.jogadores[1].id
+          )}
+          estaNaVez={state.turnoJogadorId === salaAtual.jogadores[1].id}
+          fase={state.fase}
         />
       </div>
     </main>
