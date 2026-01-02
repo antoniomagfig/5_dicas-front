@@ -2,7 +2,9 @@ import Link from "next/link";
 
 export default function Welcome() {
   return (
-    <main className="min-h-screen flex items-center justify-center bg-slate-950 text-white">
+    <main className="min-h-screen flex items-center justify-center bg-slate-950 text-white relative">
+      
+      {/* CONTEÚDO CENTRAL */}
       <div className="flex flex-col items-center gap-8 text-center px-4">
         
         {/* Título */}
@@ -20,7 +22,6 @@ export default function Welcome() {
         {/* Botões */}
         <div className="flex flex-col sm:flex-row gap-4 mt-4">
           
-          {/* Regras */}
           <Link
             href="/regras"
             className="px-6 py-3 rounded-xl border border-slate-400
@@ -29,7 +30,6 @@ export default function Welcome() {
             Regras
           </Link>
 
-          {/* Criar conta */}
           <Link
             href="/criar-conta"
             className="px-6 py-3 rounded-xl bg-slate-700
@@ -38,7 +38,6 @@ export default function Welcome() {
             Criar conta
           </Link>
 
-          {/* Entrar */}
           <Link
             href="/entrar"
             className="px-6 py-3 rounded-xl bg-blue-600
@@ -50,9 +49,36 @@ export default function Welcome() {
         </div>
       </div>
 
-      <div className="absolute bottom-4 left-4 text-slate-400 text-sm">
-        Contato: <span className="select-all">tommagfig@icloud.com</span>
-      </div>
+      {/* 🔽 RODAPÉ FIXO */}
+      <footer className="fixed bottom-4 left-4 text-sm text-slate-400 flex flex-row gap-3">
+        
+        <span>
+          Contato:{" "}
+          <a
+            href="mailto:tomm agfig@icloud.com"
+            className="hover:text-slate-200 transition"
+          >
+            tommagfig@icloud.com
+          </a>
+        </span>
+
+        <div className="flex gap-3">
+          <Link
+            href="/termos-de-uso"
+            className="hover:text-slate-200 underline transition"
+          >
+            Termos de Uso
+          </Link>
+
+          <Link
+            href="/politica-de-privacidade"
+            className="hover:text-slate-200 underline transition"
+          >
+            Política de Privacidade
+          </Link>
+        </div>
+
+      </footer>
     </main>
   );
 }
