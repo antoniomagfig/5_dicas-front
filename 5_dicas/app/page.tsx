@@ -49,6 +49,10 @@ export default function Welcome() {
 
         </div>
       </div>
+
+      <div className="absolute bottom-4 left-4 text-slate-400 text-sm">
+        Contato: <span className="select-all">tommagfig@icloud.com</span>
+      </div>
     </main>
   );
 }

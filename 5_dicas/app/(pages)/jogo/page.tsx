@@ -104,10 +104,6 @@ export default function Jogo() {
 
   const minhaVez = state.turnoJogadorId === usuario.id;
 
-  const fimDoJogo =
-    state.fase === "fim_rodada" &&
-    salaAtual.rodadaAtual >= salaAtual.totalRodadas;
-
   /* ======================
      DICAS UI
   ====================== */
@@ -167,7 +163,22 @@ export default function Jogo() {
   ====================== */
 
   return (
-    <main className="min-h-screen bg-slate-950 flex items-center justify-center">
+    <main className="min-h-screen bg-slate-950 flex flex-col items-center justify-center">
+        
+        {/* ⬅ SAIR DO JOGO */}
+        <button
+        onClick={voltarMenu}
+        className="absolute top-4 left-4 text-slate-300 text-sm
+                    hover:text-white transition flex items-center gap-2"
+        >
+        ← Sair do jogo
+        </button>
+
+        {/* 🔝 TOPO – RODADA */}
+        <div className="mt-6 mb-4 text-slate-300 text-sm font-semibold tracking-wide">
+        Rodada {salaAtual.rodadaAtual} / {salaAtual.totalRodadas}
+        </div>
+      
       <div className="w-full max-w-7xl px-6 py-10 grid grid-cols-1 md:grid-cols-[1fr_1.35fr_1fr] gap-6">
         {/* Jogador 1 */}
         <PlayerPanel
@@ -187,7 +198,6 @@ export default function Jogo() {
           fase={state.fase}
           minhaVez={minhaVez}
           mensagemFim={state.mensagemFim}
-          fimDoJogo={fimDoJogo}
           onRevelarDica={revelarDica}
           onPalpitar={palpitar}
           onPular={pular}
