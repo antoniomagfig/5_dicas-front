@@ -113,17 +113,22 @@ export default function GameCard({
   }
 
   /* ======================
-     JOGO ATIVO
+    JOGO ATIVO
   ====================== */
   return (
-    <section className="bg-white rounded-3xl p-10 shadow-xl min-h-[80vh] flex flex-col gap-6">
-
+    <section
+      className="
+        bg-white rounded-3xl shadow-xl
+        min-h-[80vh] flex flex-col gap-6
+        p-6 md:p-10
+      "
+    >
       {/* CABEÇALHO */}
       <div className="text-center">
         <span className="text-sm uppercase tracking-wide text-slate-500">
           Tipo da carta
         </span>
-        <h2 className="text-3xl font-extrabold text-slate-900 mt-1">
+        <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 mt-1">
           {tipo}
         </h2>
       </div>
@@ -135,7 +140,8 @@ export default function GameCard({
             key={d.numero}
             onClick={() => onRevelarDica(d.numero)}
             disabled={!minhaVez || fase !== "escolha_dica" || d.revelada}
-            className={`w-full text-left px-5 py-4 rounded-2xl border font-medium
+            className={`w-full text-left px-4 py-3 md:px-5 md:py-4
+              rounded-2xl border font-medium
               ${
                 d.revelada
                   ? "bg-slate-50 text-slate-900 border-slate-300"
@@ -149,35 +155,48 @@ export default function GameCard({
       </div>
 
       {/* PALPITE */}
-      <div className="mt-auto flex gap-2">
+      <div className="mt-auto flex flex-col md:flex-row gap-2">
         <input
           value={palpiteTexto}
           onChange={(e) => setPalpiteTexto(e.target.value)}
           disabled={!minhaVez || fase !== "palpite"}
           placeholder="Seu palpite"
-          className="flex-1 border rounded-2xl px-4 py-3 outline-none
-                     disabled:bg-slate-100"
+          className="
+            w-full md:flex-1
+            border rounded-2xl px-4 py-3 outline-none
+            disabled:bg-slate-100
+          "
         />
 
-        <button
-          onClick={handlePalpitar}
-          disabled={!minhaVez || fase !== "palpite"}
-          className="px-6 py-3 rounded-2xl bg-blue-600 text-white
-                     hover:bg-blue-500 transition font-semibold
-                     disabled:opacity-50"
-        >
-          Palpitar
-        </button>
+        <div className="flex gap-2 flex-col sm:flex-row">
+          <button
+            onClick={handlePalpitar}
+            disabled={!minhaVez || fase !== "palpite"}
+            className="
+              w-full sm:w-auto
+              px-6 py-3 rounded-2xl
+              bg-blue-600 text-white
+              hover:bg-blue-500 transition font-semibold
+              disabled:opacity-50
+            "
+          >
+            Palpitar
+          </button>
 
-        <button
-          onClick={onPular}
-          disabled={!minhaVez || fase !== "palpite"}
-          className="px-6 py-3 rounded-2xl bg-slate-700 text-white
-                     hover:bg-slate-600 transition font-semibold
-                     disabled:opacity-50"
-        >
-          Pular
-        </button>
+          <button
+            onClick={onPular}
+            disabled={!minhaVez || fase !== "palpite"}
+            className="
+              w-full sm:w-auto
+              px-6 py-3 rounded-2xl
+              bg-slate-700 text-white
+              hover:bg-slate-600 transition font-semibold
+              disabled:opacity-50
+            "
+          >
+            Pular
+          </button>
+        </div>
       </div>
     </section>
   );

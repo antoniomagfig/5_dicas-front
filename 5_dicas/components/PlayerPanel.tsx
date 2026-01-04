@@ -3,7 +3,7 @@ type Palpite = {
   texto: string;
 };
 
-type Fase = "escolha_dica" | "palpite" | "fim_rodada";
+type Fase = "escolha_dica" | "palpite" | "fim_rodada" | "fim_jogo";
 
 type Props = {
   username: string;

@@ -163,29 +163,81 @@ export default function Jogo() {
   ====================== */
 
   return (
-    <main className="min-h-screen bg-slate-950 flex flex-col items-center justify-center">
-        
-        {/* ⬅ SAIR DO JOGO */}
-        <button
+    <main className="min-h-screen bg-slate-950 flex flex-col items-center relative">
+
+      {/* ⬅ SAIR DO JOGO */}
+      <button
         onClick={voltarMenu}
         className="absolute top-4 left-4 text-slate-300 text-sm
-                    hover:text-white transition flex items-center gap-2"
-        >
+                  hover:text-white transition flex items-center gap-2 z-10"
+      >
         ← Sair do jogo
-        </button>
+      </button>
 
-        {/* 🔝 TOPO – RODADA */}
-        <div className="mt-6 mb-4 text-slate-300 text-sm font-semibold tracking-wide">
+      {/* 🔝 TOPO – RODADA */}
+      <div className="mt-16 mb-4 text-slate-300 text-sm font-semibold tracking-wide">
         Rodada {salaAtual.rodadaAtual} / {salaAtual.totalRodadas}
-        </div>
-      
-      <div className="w-full max-w-7xl px-6 py-10 grid grid-cols-1 md:grid-cols-[1fr_1.35fr_1fr] gap-6">
+      </div>
+
+      {/* ======================
+          📱 MOBILE
+      ====================== */}
+      <div className="md:hidden w-full max-w-md px-4 flex flex-col gap-4">
+
+        {/* CARTA */}
+        <GameCard
+          tipo={cartaAtual.tipo}
+          dicas={dicasUI}
+          fase={state.fase}
+          minhaVez={minhaVez}
+          mensagemFim={state.mensagemFim}
+          onRevelarDica={revelarDica}
+          onPalpitar={palpitar}
+          onPular={pular}
+          onAvancarRodada={avancarRodada}
+          onVoltarMenu={voltarMenu}
+        />
+
+        {/* JOGADOR ATUAL */}
+        <PlayerPanel
+          username={salaAtual.jogadores.find(j => j.id === state.turnoJogadorId)!.username}
+          pontos={state.pontos[state.turnoJogadorId] ?? 0}
+          palpites={state.palpites.filter(
+            p => p.jogadorId === state.turnoJogadorId
+          )}
+          estaNaVez={true}
+          fase={state.fase}
+        />
+
+        {/* ADVERSÁRIO */}
+        <PlayerPanel
+          username={salaAtual.jogadores.find(j => j.id !== state.turnoJogadorId)!.username}
+          pontos={
+            state.pontos[
+              salaAtual.jogadores.find(j => j.id !== state.turnoJogadorId)!.id
+            ] ?? 0
+          }
+          palpites={state.palpites.filter(
+            p => p.jogadorId !== state.turnoJogadorId
+          )}
+          estaNaVez={false}
+          fase={state.fase}
+        />
+      </div>
+
+      {/* ======================
+          💻 DESKTOP
+      ====================== */}
+      <div
+        className="hidden md:grid w-full max-w-7xl px-6 py-10
+                  grid-cols-[1fr_1.35fr_1fr] gap-6"
+      >
         {/* Jogador 1 */}
         <PlayerPanel
           username={salaAtual.jogadores[0].username}
           pontos={state.pontos[salaAtual.jogadores[0].id] ?? 0}
           palpites={state.palpites.filter(
-            (p: Palpite) => p.jogadorId === salaAtual.jogadores[0].id
+            p => p.jogadorId === salaAtual.jogadores[0].id
           )}
           estaNaVez={state.turnoJogadorId === salaAtual.jogadores[0].id}
           fase={state.fase}
@@ -210,7 +262,7 @@ export default function Jogo() {
           username={salaAtual.jogadores[1].username}
           pontos={state.pontos[salaAtual.jogadores[1].id] ?? 0}
           palpites={state.palpites.filter(
-            (p: Palpite) => p.jogadorId === salaAtual.jogadores[1].id
+            p => p.jogadorId === salaAtual.jogadores[1].id
           )}
           estaNaVez={state.turnoJogadorId === salaAtual.jogadores[1].id}
           fase={state.fase}
