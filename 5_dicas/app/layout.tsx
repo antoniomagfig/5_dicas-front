@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { GameProvider } from "@/context/GameContext";
 import { AuthProvider } from "@/context/AuthContext";
+import BackButton from "@/components/BackButton";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,7 +38,11 @@ export default function RootLayout({
 
       <body>
         <AuthProvider>
-          <GameProvider>{children}</GameProvider>
+          <GameProvider>
+            {/* ⬅ BOTÃO VOLTAR GLOBAL */}
+            <BackButton />
+            {children}
+          </GameProvider>
         </AuthProvider>
       </body>
     </html>

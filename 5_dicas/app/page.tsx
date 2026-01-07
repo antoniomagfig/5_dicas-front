@@ -55,7 +55,7 @@ export default function Welcome() {
         <span>
           Contato:{" "}
           <a
-            href="mailto:tomm agfig@icloud.com"
+            href="mailto:tommagfig@icloud.com"
             className="hover:text-slate-200 transition"
           >
             tommagfig@icloud.com
