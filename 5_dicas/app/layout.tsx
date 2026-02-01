@@ -30,15 +30,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-br">
-      <head>
-        {/* Google AdSense */}
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4010945906925525"
-          crossOrigin="anonymous"
-        ></script>
-      </head>
-
       <body>
         <AuthProvider>
           <GameProvider>
